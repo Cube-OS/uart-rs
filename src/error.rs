@@ -15,12 +15,6 @@
 //
 
 use failure::Fail;
-#[cfg(feature = "nos3")]
-use nosengine_rust::client::uart;
-#[cfg(feature = "nos3")]
-use std::sync;
-#[cfg(feature = "nos3")]
-use toml;
 
 /// Custom errors for UART actions
 #[derive(Fail, Debug, Clone, PartialEq)]
@@ -31,84 +25,20 @@ pub enum UartError {
     /// A read/write call was made while another call was already in-progress
     #[fail(display = "Serial port already in-use")]
     PortBusy,
-    /// An I/O error was thrown by the kernel
-    #[fail(display = "IO Error: {}", description)]
-    IoError {
-        /// The underlying error type
-        cause: std::io::ErrorKind,
-        /// Error description
-        description: String,
-    },
     /// An error was thrown by the serial driver
-    #[fail(display = "Serial Error: {}", description)]
-    SerialError {
-        /// The underlying error type
-        cause: serial::ErrorKind,
-        /// Error description
-        description: String,
-    },
-    /// A poison error from the nosengine-rust uart client
-    #[cfg(feature = "nos3")]
-    #[fail(display = "Mutex Poison Error")]
-    MutexPoisonError,
+    #[fail(display = "Serial Error")]
+    SerialError(serial::ErrorKind),
 }
 
 impl From<std::io::Error> for UartError {
     fn from(error: std::io::Error) -> Self {
-        UartError::IoError {
-            cause: error.kind(),
-            description: error.to_string().to_owned(),
-        }
+        UartError::SerialError(serial::ErrorKind::Io(error.kind()))
     }
 }
 
 impl From<serial::Error> for UartError {
     fn from(error: serial::Error) -> Self {
-        UartError::SerialError {
-            cause: error.kind(),
-            description: error.to_string().to_owned(),
-        }
-    }
-}
-
-#[cfg(feature = "nos3")]
-impl From<uart::UARTError> for UartError {
-    fn from(_error: uart::UARTError) -> Self {
-        UartError::GenericError
-    }
-}
-
-#[cfg(feature = "nos3")]
-impl From<toml::ser::Error> for UartError {
-    fn from(_error: toml::ser::Error) -> Self {
-        UartError::GenericError
-    }
-}
-
-#[cfg(feature = "nos3")]
-impl From<toml::de::Error> for UartError {
-    fn from(_error: toml::de::Error) -> Self {
-        UartError::GenericError
-    }
-}
-
-#[cfg(feature = "nos3")]
-impl From<sync::mpsc::RecvError> for UartError {
-    fn from(_error: sync::mpsc::RecvError) -> Self {
-        UartError::GenericError
-    }
-}
-
-#[cfg(feature = "nos3")]
-impl From<std::sync::PoisonError<std::sync::MutexGuard<'_, nosengine_rust::client::uart::UART>>>
-    for UartError
-{
-    fn from(
-        _error: std::sync::PoisonError<
-            std::sync::MutexGuard<'_, nosengine_rust::client::uart::UART>,
-        >,
-    ) -> Self {
-        UartError::MutexPoisonError
+        UartError::SerialError(error.kind())
     }
 }
 
