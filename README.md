@@ -1,4 +1,4 @@
-# UART Library for Rust in KubOS
+# UART Library for Rust in KubOS/Cube-OS
 
 This library provides abstractions for performing UART operations in Rust.
 
