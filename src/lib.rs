@@ -30,6 +30,7 @@ use std::cell::RefCell;
 #[allow(unused_imports)]
 use std::io::prelude::*;
 use std::time::Duration;
+use std::thread;
 
 /// Wrapper for UART stream
 pub struct Connection {
@@ -63,6 +64,11 @@ impl Connection {
     pub fn read(&self, len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
         self.stream.read(len, timeout)
     }
+
+    /// Write - Read transfer
+    pub fn transfer(&self, data: &[u8], len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
+        self.stream.transfer(data,len,timeout)
+    }
 }
 
 /// This trait is used to represent streams and allows for mocking for api unit tests
@@ -72,6 +78,9 @@ pub trait Stream: Send {
 
     /// Read upto a specified amount of raw bytes from the stream
     fn read(&self, len: usize, timeout: Duration) -> UartResult<Vec<u8>>;
+
+    /// Write - Read transfer
+    fn transfer(&self, data: &[u8], len: usize, timeout: Duration) -> UartResult<Vec<u8>>;
 }
 
 // This is the actual stream that data is tranferred over
@@ -102,9 +111,7 @@ impl Stream for SerialStream {
             .map_err(|_| UartError::PortBusy)?;
         port.set_timeout(self.timeout)?;
 
-        port.write_all(data)?;
-
-        Ok(())
+        Ok(port.write_all(data)?)
     }
 
     fn read(&self, len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
@@ -116,6 +123,25 @@ impl Stream for SerialStream {
         port.set_timeout(timeout)?;
 
         let mut response: Vec<u8> = vec![0; len];
+
+        port.read_exact(response.as_mut_slice())?;
+
+        Ok(response)
+    }
+
+    fn transfer(&self, data: &[u8], len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
+        let mut port = self
+            .port
+            .try_borrow_mut()
+            .map_err(|_| UartError::PortBusy)?;
+
+        port.set_timeout(timeout)?;
+
+        let mut response: Vec<u8> = vec![0; len];
+
+        port.write_all(data)?;
+        
+        thread::sleep(timeout);
 
         port.read_exact(response.as_mut_slice())?;
 

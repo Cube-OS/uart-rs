@@ -243,4 +243,38 @@ impl Stream for MockStream {
             self.read.result.clone()
         }
     }
+
+    fn transfer(&self, data: &[u8], len: usize, _timeout: Duration) -> UartResult<Vec<u8>> {
+        if self.write.input.borrow_mut().is_empty() {
+            self.write.result.clone()?
+        } else {
+            let input = self.write.input.borrow_mut().pop_front().unwrap();
+            if input.is_empty() {
+                self.write.result.clone()?
+            } else {
+                //Verify input matches data
+                assert_eq!(input.as_slice(), data);
+                // Ok(())
+            }
+        }
+        if let Some(ref output) = self.read.output {
+            let mut response: Vec<u8> = vec![0; len];
+
+            match output.borrow_mut().read_exact(response.as_mut_slice()) {
+                Ok(_) => Ok(response),
+                Err(_) => {
+                    // Our buffer will throw an EOF error when it's empty,
+                    // but, in reality, our UART stream would throw a timeout
+                    // error when it was unable to read the requested number of
+                    // bytes within the timeout period
+                    Err(UartError::from(std::io::Error::new(
+                        std::io::ErrorKind::TimedOut,
+                        "Operation timed out",
+                    )))
+                }
+            }
+        } else {
+            self.read.result.clone()
+        }
+    }
 }
