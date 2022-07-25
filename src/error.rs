@@ -37,6 +37,15 @@ impl From<std::io::Error> for UartError {
     }
 }
 
+impl From<UartError> for std::io::Error {
+    fn from(error: UartError) -> std::io::Error {
+        match error {
+            UartError::SerialError(serial::ErrorKind::Io(io)) => std::io::Error::from(io),
+            _ => std::io::ErrorKind::Other.into(),
+        }
+    }
+}
+
 impl From<serial::Error> for UartError {
     fn from(error: serial::Error) -> Self {
         UartError::SerialError(error.kind())

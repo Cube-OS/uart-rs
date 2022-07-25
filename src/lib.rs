@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 
-#![deny(missing_docs)]
+// #![deny(missing_docs)]
 
 //! A generalized HAL for communicating over serial ports
 
@@ -87,13 +87,13 @@ impl Connection {
 // }
 
 // This is the actual stream that data is tranferred over
-struct SerialStream {
+pub struct SerialStream {
     port: RefCell<serial::SystemPort>,
     timeout: Duration,
 }
 
 impl SerialStream {
-    fn new(bus: &str, settings: serial::PortSettings, timeout: Duration) -> UartResult<Self> {
+    pub fn new(bus: &str, settings: serial::PortSettings, timeout: Duration) -> UartResult<Self> {
         let mut port = serial::open(bus)?;
 
         port.configure(&settings)?;
