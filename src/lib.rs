@@ -20,7 +20,7 @@
 //! A generalized HAL for communicating over serial ports
 
 mod error;
-// pub mod mock;
+pub mod mock;
 #[cfg(test)]
 mod tests;
 
@@ -119,7 +119,7 @@ impl Stream for SerialStream {
         Ok(port.write_all(&data)?)
     }
 
-    fn read(&self, data: &mut Vec<u8>, len: usize) -> UartResult<Vec<u8>> {
+    fn read(&self, data: &mut Vec<u8>, _len: usize) -> UartResult<Vec<u8>> {
         let mut port = self
             .port
             .try_borrow_mut()
@@ -134,7 +134,7 @@ impl Stream for SerialStream {
         Ok(data.to_vec())
     }
 
-    fn read_timeout(&self, data: &mut Vec<u8>, len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
+    fn read_timeout(&self, data: &mut Vec<u8>, _len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
         let mut port = self
             .port
             .try_borrow_mut()

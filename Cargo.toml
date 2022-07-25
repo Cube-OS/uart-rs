@@ -8,6 +8,5 @@ edition = "2018"
 serial = "0.4.0"
 failure = "0.1.8"
 toml = "0.4.0"
-# hal-stream = {git = "ssh://git@github.com/Cube-OS/hal-stream"}
-hal-stream = {path = "../hal-stream"}
+hal-stream = {git = "ssh://git@github.com/Cube-OS/hal-stream"}
 display_derive = "0.0.0"
