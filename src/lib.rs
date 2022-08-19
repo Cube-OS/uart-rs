@@ -51,10 +51,10 @@ impl Connection {
         bus: &str,
         settings: serial::PortSettings,
         timeout: Duration,
-    ) -> UartResult<Connection> {
-        Ok(Connection {
-            stream: Box::new(SerialStream::new(bus, settings, timeout)?),
-        })
+    ) -> Self {
+        Self {
+            stream: Box::new(SerialStream::new(bus, settings, timeout)),
+        }
     }
 
     /// Writes out raw bytes to the stream
@@ -88,20 +88,26 @@ impl Connection {
 
 // This is the actual stream that data is tranferred over
 pub struct SerialStream {
-    port: RefCell<serial::SystemPort>,
+    bus: String,
+    settings: serial::PortSettings,
     timeout: Duration,
 }
 
 impl SerialStream {
-    pub fn new(bus: &str, settings: serial::PortSettings, timeout: Duration) -> UartResult<Self> {
-        let mut port = serial::open(bus)?;
-
-        port.configure(&settings)?;
-
-        Ok(SerialStream {
-            port: RefCell::new(port),
+    pub fn new(bus: &str, settings: serial::PortSettings, timeout: Duration) -> Self {
+        Self {
+            bus: bus.to_string(),
+            settings,
             timeout,
-        })
+        }
+        // let mut port = serial::open(bus)?;
+
+        // port.configure(&settings)?;
+
+        // Ok(SerialStream {
+        //     port: RefCell::new(port),
+        //     timeout,
+        // })
     }
 }
 
@@ -110,24 +116,19 @@ impl Stream for SerialStream {
     type StreamError = UartError;
 
     fn write(&self, data: Vec<u8>) -> UartResult<()> {
-        let mut port = self
-            .port
-            .try_borrow_mut()
-            .map_err(|_| UartError::PortBusy)?;
+        let mut port = serial::open(&self.bus)?;
+
+        port.configure(&self.settings)?;
+ 
         port.set_timeout(self.timeout)?;
 
         Ok(port.write_all(&data)?)
     }
 
     fn read(&self, data: &mut Vec<u8>, _len: usize) -> UartResult<Vec<u8>> {
-        let mut port = self
-            .port
-            .try_borrow_mut()
-            .map_err(|_| UartError::PortBusy)?;
+        let mut port = serial::open(&self.bus)?;
 
-        // port.set_timeout(timeout)?;
-
-        // let mut response: Vec<u8> = vec![0; len];
+        port.configure(&self.settings)?;
 
         port.read_exact(data.as_mut_slice())?;
 
@@ -135,14 +136,11 @@ impl Stream for SerialStream {
     }
 
     fn read_timeout(&self, data: &mut Vec<u8>, _len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
-        let mut port = self
-            .port
-            .try_borrow_mut()
-            .map_err(|_| UartError::PortBusy)?;
+        let mut port = serial::open(&self.bus)?;
+
+        port.configure(&self.settings)?; 
 
         port.set_timeout(timeout)?;
-
-        // let mut response: Vec<u8> = vec![0; len];
 
         port.read_exact(data.as_mut_slice())?;
 
@@ -150,11 +148,10 @@ impl Stream for SerialStream {
     }
 
     fn transfer(&self, data: Vec<u8>, len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
-        let mut port = self
-            .port
-            .try_borrow_mut()
-            .map_err(|_| UartError::PortBusy)?;
+        let mut port = serial::open(&self.bus)?;
 
+        port.configure(&self.settings)?;
+ 
         port.set_timeout(timeout)?;
 
         let mut response: Vec<u8> = vec![0; len];
