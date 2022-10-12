@@ -38,13 +38,13 @@ use std::sync::{Arc, Mutex};
 /// Wrapper for UART stream
 pub struct Connection {
     /// Any boxed stream that allows for communication over serial ports
-    pub stream: Arc<Mutex<Box<dyn Stream<StreamError = UartError>>>>,
+    pub stream: Box<dyn Stream<StreamError = UartError> + Send>,
 }
 
 impl Connection {
     /// Constructor to creation connection with provided stream
-    pub fn new(stream: Box<dyn Stream<StreamError = UartError>>) -> Connection {
-        Connection { stream: Arc::new(Mutex::new(stream)) }
+    pub fn new(stream: Box<dyn Stream<StreamError = UartError> + Send>) -> Connection {
+        Connection { stream }
     }
 
     /// Convenience constructor to create connection from bus path
@@ -54,24 +54,24 @@ impl Connection {
         timeout: Duration,
     ) -> Connection {
         Connection {
-            stream: Arc::new(Mutex::new(Box::new(SerialStream::new(bus, settings, timeout)))),
+            stream: Box::new(SerialStream::new(bus, settings, timeout)),
         }
     }
 
     /// Writes out raw bytes to the stream
     pub fn write(&self, data: &[u8]) -> UartResult<()> {
-        self.stream.lock().unwrap().write(data.to_vec())
+        self.stream.write(data.to_vec())
     }
 
     /// Reads messages upto specified length recieved on the bus
     pub fn read(&self, len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
         let mut response: Vec<u8> = vec![0; len];
-        self.stream.lock().unwrap().read_timeout(&mut response, len, timeout)
+        self.stream.read_timeout(&mut response, len, timeout)
     }
 
     /// Write - Read transfer
     pub fn transfer(&self, data: &[u8], len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
-        self.stream.lock().unwrap().transfer(data.to_vec(),len,timeout)
+        self.stream.transfer(data.to_vec(),len,timeout)
     }
 }
 
