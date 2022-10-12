@@ -33,6 +33,7 @@ use std::io::prelude::*;
 use std::time::Duration;
 use std::thread;
 use hal_stream::Stream;
+use std::sync::{Arc, Mutex};
 
 /// Wrapper for UART stream
 pub struct Connection {
@@ -53,7 +54,7 @@ impl Connection {
         timeout: Duration,
     ) -> UartResult<Connection> {
         Ok(Connection {
-            stream: Arc::new(Mutex::new(Box::new(SerialStream::new(bus, settings, timeout)?))),
+            stream: Arc::new(Mutex::new(Box::new(SerialStream::new(bus, settings, timeout)))),
         })
     }
 
