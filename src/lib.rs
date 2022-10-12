@@ -60,18 +60,18 @@ impl Connection {
 
     /// Writes out raw bytes to the stream
     pub fn write(&self, data: &[u8]) -> UartResult<()> {
-        self.stream.write(data.to_vec())
+        self.stream.lock().unwrap().write(data.to_vec())
     }
 
     /// Reads messages upto specified length recieved on the bus
     pub fn read(&self, len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
         let mut response: Vec<u8> = vec![0; len];
-        self.stream.read_timeout(&mut response, len, timeout)
+        self.stream.lock().unwrap().read_timeout(&mut response, len, timeout)
     }
 
     /// Write - Read transfer
     pub fn transfer(&self, data: &[u8], len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
-        self.stream.transfer(data.to_vec(),len,timeout)
+        self.stream.lock().unwrap().transfer(data.to_vec(),len,timeout)
     }
 }
 
