@@ -37,13 +37,13 @@ use hal_stream::Stream;
 /// Wrapper for UART stream
 pub struct Connection {
     /// Any boxed stream that allows for communication over serial ports
-    pub stream: Box<dyn Stream<StreamError = UartError>>,
+    pub stream: Arc<Mutex<Box<dyn Stream<StreamError = UartError>>>>,
 }
 
 impl Connection {
     /// Constructor to creation connection with provided stream
     pub fn new(stream: Box<dyn Stream<StreamError = UartError>>) -> Connection {
-        Connection { stream }
+        Connection { stream: Arc::new(Mutex::new(stream)) }
     }
 
     /// Convenience constructor to create connection from bus path
@@ -53,7 +53,7 @@ impl Connection {
         timeout: Duration,
     ) -> UartResult<Connection> {
         Ok(Connection {
-            stream: Box::new(SerialStream::new(bus, settings, timeout)?),
+            stream: Arc::new(Mutex::new(Box::new(SerialStream::new(bus, settings, timeout)?))),
         })
     }
 
