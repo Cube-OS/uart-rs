@@ -52,10 +52,10 @@ impl Connection {
         bus: &str,
         settings: serial::PortSettings,
         timeout: Duration,
-    ) -> UartResult<Connection> {
-        Ok(Connection {
+    ) -> Connection {
+        Connection {
             stream: Arc::new(Mutex::new(Box::new(SerialStream::new(bus, settings, timeout)))),
-        })
+        }
     }
 
     /// Writes out raw bytes to the stream
