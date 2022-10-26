@@ -224,6 +224,21 @@ impl Stream for MockStream {
         }
     }
 
+    fn write_bytes(&self, data: Vec<u8>) -> UartResult<()> {
+        if self.write.input.borrow_mut().is_empty() {
+            self.write.result.clone()
+        } else {
+            let input = self.write.input.borrow_mut().pop_front().unwrap();
+            if input.is_empty() {
+                self.write.result.clone()
+            } else {
+                //Verify input matches data
+                assert_eq!(input.as_slice(), data);
+                Ok(())
+            }
+        }
+    }
+
     fn read(&self, _data: &mut Vec<u8>, len: usize) -> UartResult<Vec<u8>> {
         if let Some(ref output) = self.read.output {
             let mut response: Vec<u8> = vec![0; len];

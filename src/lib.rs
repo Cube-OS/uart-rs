@@ -69,6 +69,11 @@ impl Connection {
         self.stream.read_timeout(&mut response, len, timeout)
     }
 
+    /// Write multiple single bytes, without closing UART Port
+    pub fn write_bytes(&self, data: &[u8]) -> UartResult<()> {
+        self.stream.write_bytes(data.to_vec())
+    }
+
     /// Write - Read transfer
     pub fn transfer(&self, data: &[u8], len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
         self.stream.transfer(data.to_vec(),len,timeout)
@@ -109,7 +114,7 @@ impl SerialStream {
         //     port: RefCell::new(port),
         //     timeout,
         // })
-    }
+    }    
 }
 
 // Read and write implementations for the serial stream
@@ -124,6 +129,19 @@ impl Stream for SerialStream {
         port.set_timeout(self.timeout)?;
 
         Ok(port.write_all(&data)?)
+    }
+
+    fn write_bytes(&self, data: Vec<u8>) -> UartResult<()> {
+        let mut port = serial::open(&self.bus)?;
+
+        port.configure(&self.settings)?;
+
+        port.set_timeout(self.timeout)?;
+
+        for d in data {
+            port.write_all(&[d])?;
+        }
+        Ok(())
     }
 
     fn read(&self, data: &mut Vec<u8>, _len: usize) -> UartResult<Vec<u8>> {
