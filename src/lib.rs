@@ -140,6 +140,7 @@ impl Stream for SerialStream {
 
         for d in data {
             port.write_all(&[d])?;
+            port.flush()?;
         }
         Ok(())
     }
