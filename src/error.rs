@@ -18,9 +18,10 @@
 use failure::Fail;
 
 /// Custom errors for UART actions
-#[derive(Fail, Debug, Clone, PartialEq)]
+#[derive(Default,Fail, Debug, Clone, PartialEq)]
 pub enum UartError {
     /// Catch-all error case
+    #[default]
     #[fail(display = "Generic Error")]
     GenericError,
     /// A read/write call was made while another call was already in-progress
