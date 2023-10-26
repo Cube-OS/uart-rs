@@ -20,9 +20,6 @@
 //! A generalized HAL for communicating over serial ports
 
 mod error;
-pub mod mock;
-#[cfg(test)]
-mod tests;
 
 pub use ::serial::PortSettings;
 pub use crate::error::*;
@@ -168,11 +165,12 @@ impl Stream for SerialStream {
     }
 
     fn transfer(&self, data: Vec<u8>, len: usize, timeout: Option<Duration>) -> UartResult<Vec<u8>> {
+        let timeout = timeout.unwrap_or(self.timeout);
         let mut port = serial::open(&self.bus)?;
 
         port.configure(&self.settings)?;
  
-        port.set_timeout(timeout.unwrap())?;
+        port.set_timeout(timeout)?;
 
         let mut response: Vec<u8> = vec![0; len];
 
