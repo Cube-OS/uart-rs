@@ -76,7 +76,7 @@ impl Connection {
 
     /// Write - Read transfer
     pub fn transfer(&self, data: &[u8], len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
-        self.stream.transfer(data.to_vec(),len,timeout)
+        self.stream.transfer(data.to_vec(),len,Some(timeout))
     }
 }
 
@@ -167,12 +167,12 @@ impl Stream for SerialStream {
         Ok(data.to_vec())
     }
 
-    fn transfer(&self, data: Vec<u8>, len: usize, timeout: Duration) -> UartResult<Vec<u8>> {
+    fn transfer(&self, data: Vec<u8>, len: usize, timeout: Option<Duration>) -> UartResult<Vec<u8>> {
         let mut port = serial::open(&self.bus)?;
 
         port.configure(&self.settings)?;
  
-        port.set_timeout(timeout)?;
+        port.set_timeout(timeout.unwrap())?;
 
         let mut response: Vec<u8> = vec![0; len];
 
