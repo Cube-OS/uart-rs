@@ -8,5 +8,5 @@ edition = "2018"
 serial = "0.4.0"
 failure = "0.1.8"
 toml = "0.4.0"
-hal-stream = {git = "ssh://git@github.com/Cube-OS/hal-stream"}
+hal-stream = { version = "0.1.14", registry = "cube-os"}
 display_derive = "0.0.0"
