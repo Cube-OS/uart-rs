@@ -3,6 +3,7 @@ name = "uart-rs"
 version = "0.2.0"
 authors = ["Patrick Oppel, patrick.oppel94@gmail.com"]
 edition = "2018"
+repository = "https://github.com/Cube-OS/uart-rs"
 
 [dependencies]
 serial = "0.4.0"
