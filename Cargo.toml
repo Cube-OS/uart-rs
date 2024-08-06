@@ -1,7 +1,7 @@
 [package]
 name = "uart-rs"
 version = "0.2.0"
-authors = ["Patrick Oppel, patrick.oppel94@gmail.com"]
+authors = ["Patrick Oppel, patrick.oppel@sydney.edu.au"]
 edition = "2018"
 repository = "https://github.com/Cube-OS/uart-rs"
 
