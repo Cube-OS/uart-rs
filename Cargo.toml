@@ -1,6 +1,6 @@
 [package]
 name = "uart-rs"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Patrick Oppel, patrick.oppel@sydney.edu.au"]
 edition = "2018"
 repository = "https://github.com/Cube-OS/uart-rs"
@@ -9,5 +9,5 @@ repository = "https://github.com/Cube-OS/uart-rs"
 serial = "0.4.0"
 failure = "0.1.8"
 toml = "0.4.0"
-hal-stream = { version = "0.1.14", registry = "cube-os"}
+hal-stream = { version = "0.1.15", registry = "cube-os"}
 display_derive = "0.0.0"
